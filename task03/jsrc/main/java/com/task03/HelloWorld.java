@@ -23,20 +23,12 @@ public class HelloWorld implements RequestHandler<Map<String, Object>, Map<Strin
 	public Map<String, Object> handleRequest(Map<String, Object> event, Context context) {
 		// Ensure path & method are correctly retrieved
 		String path = (String) event.getOrDefault("rawPath", event.get("path"));
-		String method = (String) event.getOrDefault("httpMethod", "UNKNOWN");
-
 		// If the request is a GET to /hello, return success response
-		if ("/hello".equals(path) && "GET".equalsIgnoreCase(method)) {
+
 			return Map.of(
 					"statusCode", 200,
 					"message", "Hello from Lambda"
 			);
-		}
 
-		// Otherwise, return an error response
-		return Map.of(
-				"statusCode", 400,
-				"message", "Bad request syntax or unsupported method. Request path: " + path + ". HTTP method: " + method
-		);
 	}
 }
