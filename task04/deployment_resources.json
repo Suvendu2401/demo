@@ -15,6 +15,7 @@
             "ssm:PutParameter",
             "ssm:GetParameter",
             "kms:Decrypt",
+            "sqs:GetQueueAttributes",
             "sqs:ReceiveMessage",
             "sqs:DeleteMessage"
           ],
