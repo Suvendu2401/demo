@@ -7,7 +7,6 @@ import com.syndicate.deployment.annotations.lambda.LambdaUrlConfig;
 import com.syndicate.deployment.model.RetentionSetting;
 import com.syndicate.deployment.model.lambda.url.AuthType;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @LambdaHandler(
@@ -22,59 +21,22 @@ public class HelloWorld implements RequestHandler<Map<String, Object>, Map<Strin
 
 	@Override
 	public Map<String, Object> handleRequest(Map<String, Object> event, Context context) {
-		System.out.println("Hello from lambda");
+		// Ensure path & method are correctly retrieved
+		String path = (String) event.getOrDefault("rawPath", event.get("path"));
+		String method = (String) event.getOrDefault("httpMethod", "UNKNOWN");
 
-		// Get path safely
-		String path = event.containsKey("rawPath") ? (String) event.get("rawPath") : (String) event.get("path");
-		if (path == null) path = "/";
-
-		// Get HTTP method safely
-		String method = "UNKNOWN";
-		if (event.containsKey("requestContext")) {
-			Map<String, Object> requestContext = (Map<String, Object>) event.get("requestContext");
-			if (requestContext.containsKey("http")) {
-				Map<String, Object> http = (Map<String, Object>) requestContext.get("http");
-				if (http.containsKey("method")) {
-					method = (String) http.get("method");
-				}
-			}
-		} else if (event.containsKey("httpMethod")) {
-			method = (String) event.get("httpMethod");
-		}
-
-		// Handle GET request to /hello
+		// If the request is a GET to /hello, return success response
 		if ("/hello".equals(path) && "GET".equalsIgnoreCase(method)) {
-			return createSuccessResponse();
-		} else {
-			return createErrorResponse("Bad request syntax or unsupported method. Request path: " + path + ". HTTP method: " + method);
+			return Map.of(
+					"statusCode", 200,
+					"message", "Hello from Lambda"
+			);
 		}
-	}
 
-	private Map<String, Object> createSuccessResponse() {
-		Map<String, Object> response = new HashMap<>();
-		response.put("statusCode", 200);
-		response.put("headers", Map.of("Content-Type", "application/json"));
-
-		// Correct response format
-		Map<String, Object> body = new HashMap<>();
-		body.put("statusCode", 200);
-		body.put("message", "Hello from Lambda");
-		response.put("body", body);
-
-		return response;
-	}
-
-	private Map<String, Object> createErrorResponse(String message) {
-		Map<String, Object> response = new HashMap<>();
-		response.put("statusCode", 400);
-		response.put("headers", Map.of("Content-Type", "application/json"));
-
-		// Correct response format
-		Map<String, Object> body = new HashMap<>();
-		body.put("statusCode", 400);
-		body.put("message", message);
-		response.put("body", body);
-
-		return response;
+		// Otherwise, return an error response
+		return Map.of(
+				"statusCode", 400,
+				"message", "Bad request syntax or unsupported method. Request path: " + path + ". HTTP method: " + method
+		);
 	}
 }
