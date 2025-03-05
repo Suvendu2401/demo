@@ -11,28 +11,43 @@ import java.util.HashMap;
 import java.util.Map;
 
 @LambdaHandler(
-    lambdaName = "hello_world",
-	roleName = "hello_world-role",
-	isPublishVersion = true,
-	aliasName = "learn",
-	logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
+		lambdaName = "hello_world",
+		roleName = "hello_world-role",
+		isPublishVersion = true,
+		aliasName = "learn",
+		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
-@LambdaUrlConfig(authType = AuthType.NONE )
-public class HelloWorld implements RequestHandler<Map<String , Object>, Map<String, Object>> {
+@LambdaUrlConfig(authType = AuthType.NONE)
+public class HelloWorld implements RequestHandler<Map<String, Object>, Map<String, Object>> {
 
-	public Map<String, Object> handleRequest(Map<String , Object> event, Context context) {
+	@Override
+	public Map<String, Object> handleRequest(Map<String, Object> event, Context context) {
 		System.out.println("Hello from lambda");
-		String path = (String) event.getOrDefault("rawPath", event.get("path"));
-		Map<String, Object> requestContext = (Map<String, Object>) event.get("requestContext");
-		Map<String, Object> http = requestContext != null ? (Map<String, Object>) requestContext.get("http") : null;
-		String method = http != null ? (String) http.get("method") : (String) event.get("httpMethod");
 
+
+		String path = event.containsKey("rawPath") ? (String) event.get("rawPath") : (String) event.get("path");
+		if (path == null) path = "/";
+
+
+		String method = "UNKNOWN";
+		if (event.containsKey("requestContext")) {
+			Map<String, Object> requestContext = (Map<String, Object>) event.get("requestContext");
+			if (requestContext.containsKey("http")) {
+				Map<String, Object> http = (Map<String, Object>) requestContext.get("http");
+				if (http.containsKey("method")) {
+					method = (String) http.get("method");
+				}
+			}
+		} else if (event.containsKey("httpMethod")) {
+			method = (String) event.get("httpMethod");
+		}
 		if ("/hello".equals(path) && "GET".equalsIgnoreCase(method)) {
 			return createSuccessResponse();
 		} else {
 			return createErrorResponse("Bad request syntax or unsupported method. Request path: " + path + ". HTTP method: " + method);
 		}
 	}
+
 	private Map<String, Object> createSuccessResponse() {
 		Map<String, Object> response = new HashMap<>();
 		response.put("statusCode", 200);
@@ -49,4 +64,3 @@ public class HelloWorld implements RequestHandler<Map<String , Object>, Map<Stri
 		return response;
 	}
 }
-
