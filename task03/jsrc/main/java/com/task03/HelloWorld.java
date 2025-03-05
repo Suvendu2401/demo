@@ -17,27 +17,50 @@ import java.util.Map;
 		aliasName = "${lambdas_alias_name}",
 		logsExpiration = RetentionSetting.SYNDICATE_ALIASES_SPECIFIED
 )
-@LambdaUrlConfig(authType = AuthType.NONE )
-public class HelloWorld implements RequestHandler<Map<String , Object>, Map<String, Object>> {
+@LambdaUrlConfig(authType = AuthType.NONE)
+public class HelloWorld implements RequestHandler<Map<String, Object>, Map<String, Object>> {
 
-	public Map<String, Object> handleRequest(Map<String , Object> event, Context context) {
+	@Override
+	public Map<String, Object> handleRequest(Map<String, Object> event, Context context) {
 		System.out.println("Hello from lambda");
-		String path = (String) event.getOrDefault("rawPath", event.get("path"));
-		Map<String, Object> requestContext = (Map<String, Object>) event.get("requestContext");
-		Map<String, Object> http = requestContext != null ? (Map<String, Object>) requestContext.get("http") : null;
-		String method = http != null ? (String) http.get("method") : (String) event.get("httpMethod");
 
+		// Get path safely
+		String path = event.containsKey("rawPath") ? (String) event.get("rawPath") : (String) event.get("path");
+		if (path == null) path = "/";
+
+		// Get HTTP method safely
+		String method = "UNKNOWN";
+		if (event.containsKey("requestContext")) {
+			Map<String, Object> requestContext = (Map<String, Object>) event.get("requestContext");
+			if (requestContext.containsKey("http")) {
+				Map<String, Object> http = (Map<String, Object>) requestContext.get("http");
+				if (http.containsKey("method")) {
+					method = (String) http.get("method");
+				}
+			}
+		} else if (event.containsKey("httpMethod")) {
+			method = (String) event.get("httpMethod");
+		}
+
+		// Handle GET request to /hello
 		if ("/hello".equals(path) && "GET".equalsIgnoreCase(method)) {
 			return createSuccessResponse();
 		} else {
 			return createErrorResponse("Bad request syntax or unsupported method. Request path: " + path + ". HTTP method: " + method);
 		}
 	}
+
 	private Map<String, Object> createSuccessResponse() {
 		Map<String, Object> response = new HashMap<>();
 		response.put("statusCode", 200);
 		response.put("headers", Map.of("Content-Type", "application/json"));
-		response.put("body", "{\"statusCode\": 200, \"message\": \"Hello from Lambda\"}");
+
+		// Correct response format
+		Map<String, Object> body = new HashMap<>();
+		body.put("statusCode", 200);
+		body.put("message", "Hello from Lambda");
+		response.put("body", body);
+
 		return response;
 	}
 
@@ -45,7 +68,13 @@ public class HelloWorld implements RequestHandler<Map<String , Object>, Map<Stri
 		Map<String, Object> response = new HashMap<>();
 		response.put("statusCode", 400);
 		response.put("headers", Map.of("Content-Type", "application/json"));
-		response.put("body", String.format("{\"statusCode\": %d, \"message\": \"%s\"}", 400, message));
+
+		// Correct response format
+		Map<String, Object> body = new HashMap<>();
+		body.put("statusCode", 400);
+		body.put("message", message);
+		response.put("body", body);
+
 		return response;
 	}
 }
