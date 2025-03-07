@@ -38,37 +38,45 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
 		Integer principalId = (Integer) request.get("principalId");
 		Map<String, Object> content = (Map<String, Object>) request.get("content");
 
+
 		if (principalId == null || content == null) {
 			return Map.of("statusCode", 400, "message", "Invalid input: Missing principalId or content");
 		}
 
-		// Prepare item for DynamoDB
-		Map<String, AttributeValue> item = new HashMap<>();
-		item.put("id", new AttributeValue(id));
-		item.put("principalId", new AttributeValue().withN(String.valueOf(principalId)));
-		item.put("createdAt", new AttributeValue(timestamp));
-		item.put("body", new AttributeValue().withM(convertToDynamoDBMap(content)));
+		return Map.of(
+				"statusCode", 201,
+				"message" , "Hello from lambda"
+		);
 
-		try {
-			// Insert into DynamoDB
-			PutItemRequest putItemRequest = new PutItemRequest(TABLE_NAME, item);
-			dynamoDB.putItem(putItemRequest);
-			context.getLogger().log("Successfully stored event in DynamoDB");
+//		// Prepare item for DynamoDB
+//		Map<String, AttributeValue> item = new HashMap<>();
+//		item.put("id", new AttributeValue(id));
+//		item.put("principalId", new AttributeValue().withN(String.valueOf(principalId)));
+//		item.put("createdAt", new AttributeValue(timestamp));
+//		item.put("body", new AttributeValue().withM(convertToDynamoDBMap(content)));
+//
+//		try {
+//			// Insert into DynamoDB
+//			PutItemRequest putItemRequest = new PutItemRequest(TABLE_NAME, item);
+//			dynamoDB.putItem(putItemRequest);
+//			context.getLogger().log("Successfully stored event in DynamoDB");
+//
+//			// Prepare response
+//			return Map.of(
+//					"statusCode", 201,
+//					"event", Map.of(
+//							"id", id,
+//							"principalId", principalId,
+//							"createdAt", timestamp,
+//							"body", content
+//					)
+//			);
+//		} catch (Exception e) {
+//			context.getLogger().log("Error saving to DynamoDB: " + e.getMessage());
+//			return Map.of("statusCode", 500, "message", "Error saving event to database");
+//		}
 
-			// Prepare response
-			return Map.of(
-					"statusCode", 201,
-					"event", Map.of(
-							"id", id,
-							"principalId", principalId,
-							"createdAt", timestamp,
-							"body", content
-					)
-			);
-		} catch (Exception e) {
-			context.getLogger().log("Error saving to DynamoDB: " + e.getMessage());
-			return Map.of("statusCode", 500, "message", "Error saving event to database");
-		}
+
 	}
 
 	private Map<String, AttributeValue> convertToDynamoDBMap(Map<String, Object> content) {
