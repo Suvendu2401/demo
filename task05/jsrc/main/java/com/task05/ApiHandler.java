@@ -28,30 +28,37 @@ public class ApiHandler implements RequestHandler<Map<String, Object>, Map<Strin
 
 	@Override
 	public Map<String, Object> handleRequest(Map<String, Object> request, Context context) {
-		context.getLogger().log("Received request: " + request.toString());
 
-		// Generate UUID and timestamp
-		String id = UUID.randomUUID().toString();
-		String timestamp = Instant.now().toString();
-
-		// Extract request parameters
-		Integer principalId = (Integer) request.get("principalId");
-		Map<String, Object> content = (Map<String, Object>) request.get("content");
-
-
-//		if (principalId == null || content == null) {
-//			return Map.of("statusCode", 400, "message", "Invalid input: Missing principalId or content");
-//		}
 
 		return Map.of(
-					"statusCode", 201,
-					"event", Map.of(
-							"id", id,
-							"principalId", principalId,
-							"createdAt", timestamp,
-							"body", content
-					)
-			);
+				"statusCode",201,
+				"message","hello from lambda"
+				);
+
+//		context.getLogger().log("Received request: " + request.toString());
+//
+//		// Generate UUID and timestamp
+//		String id = UUID.randomUUID().toString();
+//		String timestamp = Instant.now().toString();
+//
+//		// Extract request parameters
+//		Integer principalId = (Integer) request.get("principalId");
+//		Map<String, Object> content = (Map<String, Object>) request.get("content");
+//
+//
+////		if (principalId == null || content == null) {
+////			return Map.of("statusCode", 400, "message", "Invalid input: Missing principalId or content");
+////		}
+//
+//		return Map.of(
+//					"statusCode", 201,
+//					"event", Map.of(
+//							"id", id,
+//							"principalId", principalId,
+//							"createdAt", timestamp,
+//							"body", content
+//					)
+//			);
 
 //		// Prepare item for DynamoDB
 //		Map<String, AttributeValue> item = new HashMap<>();
